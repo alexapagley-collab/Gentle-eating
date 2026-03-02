@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gentle Eating Reset</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#f0a96d">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{font-family:-apple-system,Arial;margin:0;background:#fff4e6}
+.container{max-width:520px;margin:auto;padding:15px}
+.card{background:white;padding:15px;margin-bottom:15px;border-radius:12px}
+.entry{padding:6px;margin:4px 0;background:#fafafa;border-radius:8px}
+.big{font-size:22px;text-align:center}
+input[type=text]{width:100%;padding:6px;margin-top:4px}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Gentle Eating Reset</h1>
+
+<div class="card">
+<div id="streak" class="big">Daily Tracker</div>
+</div>
+
+<div class="card">
+
+<h3 id="dateTitle">Today</h3>
+
+<label><input type="checkbox" id="morning"> Morning</label>
+<label><input type="checkbox" id="lunch"> Lunch</label>
+<label><input type="checkbox" id="snack"> Snack</label>
+<label><input type="checkbox" id="dinner"> Dinner</label>
+<label><input type="checkbox" id="evening"> Evening</label>
+
+<h3>What I Ate</h3>
+
+Morning<input id="mfood" type="text">
+Lunch<input id="lfood" type="text">
+Snack<input id="sfood" type="text">
+Dinner<input id="dfood" type="text">
+Evening<input id="efood" type="text">
+
+</div>
+
+<div class="card">
+<h3>Food Log</h3>
+<details>
+<div id="foodLog"></div>
+</details>
+</div>
+
+<div class="card">
+<h3>Gentle Reminders</h3>
+• Skipping meals makes night eating worse<br>
+• Carbs help prevent overeating<br>
+• Something is better than nothing<br>
+• No restarting — just next meal<br>
+• Consistent beats perfect
+</div>
+
+<div class="card">
+<h3>History</h3>
+<div id="history"></div>
+</div>
+
+</div>
+
+<script>
+
+function todayKey(){
+return new Date().toISOString().slice(0,10)
+}
+
+let currentDate=todayKey()
+
+function saveDay(){
+
+let data={
+morning:morning.checked,
+lunch:lunch.checked,
+snack:snack.checked,
+dinner:dinner.checked,
+evening:evening.checked,
+mfood:mfood.value,
+lfood:lfood.value,
+sfood:sfood.value,
+dfood:dfood.value,
+efood:efood.value
+}
+
+localStorage.setItem(currentDate,JSON.stringify(data))
+
+loadEverything()
+
+}
+
+function loadDay(date){
+
+currentDate=date
+
+let d=JSON.parse(localStorage.getItem(date))||{}
+
+morning.checked=d.morning||false
+lunch.checked=d.lunch||false
+snack.checked=d.snack||false
+dinner.checked=d.dinner||false
+evening.checked=d.evening||false
+
+mfood.value=d.mfood||""
+lfood.value=d.lfood||""
+sfood.value=d.sfood||""
+dfood.value=d.dfood||""
+efood.value=d.efood||""
+
+dateTitle.innerHTML=date
+
+}
+
+function loadHistory(){
+
+history.innerHTML=""
+
+Object.keys(localStorage).sort().reverse().forEach(key=>{
+
+let div=document.createElement("div")
+div.className="entry"
+div.innerHTML=key
+div.onclick=()=>loadDay(key)
+
+history.appendChild(div)
+
+})
+
+}
+
+function loadFoodLog(){
+
+foodLog.innerHTML=""
+
+Object.keys(localStorage).sort().reverse().forEach(key=>{
+
+let d=JSON.parse(localStorage[key])||{}
+
+let div=document.createElement("div")
+div.className="entry"
+
+div.innerHTML="<b>"+key+"</b><br>"+
+"Morning: "+(d.mfood||"")+"<br>"+
+"Lunch: "+(d.lfood||"")+"<br>"+
+"Snack: "+(d.sfood||"")+"<br>"+
+"Dinner: "+(d.dfood||"")+"<br>"+
+"Evening: "+(d.efood||"")
+
+foodLog.appendChild(div)
+
+})
+
+}
+
+function loadEverything(){
+loadHistory()
+loadFoodLog()
+loadDay(currentDate)
+}
+
+function setupAutosave(){
+
+let inputs=[morning,lunch,snack,dinner,evening,
+mfood,lfood,sfood,dfood,efood]
+
+inputs.forEach(i=>{
+i.addEventListener("change",saveDay)
+i.addEventListener("keyup",saveDay)
+})
+
+}
+
+loadEverything()
+setupAutosave()
+
+if ('serviceWorker' in navigator) {
+ navigator.serviceWorker.register('service-worker.js');
+}
+
+</script>
+
+</body>
+</html>
